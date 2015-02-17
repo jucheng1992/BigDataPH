@@ -37,7 +37,7 @@ func <- function(x) {
       }
       return(c(raw,n))
 }
-size<- 1e5
+size<- 1e4
 Eptime<- system.time({
       psteps <- foreach(x=1:size,.combine='rbind') %dopar% func(x)
       stopCluster(cl)
@@ -61,6 +61,34 @@ ssteps[which.max(ssteps[,2]),]
 Estime
 ```
 
+
+
+Here is an example using doParallel and foreach package to do randorm forest. 
+```{r}
+
+library(doParallel)
+library(randomForest)
+prf.time<-system.time({
+      cl <- makeCluster(4)
+      registerDoParallel(cl)
+      ## each cluster, we set 2500 trees
+      rf <- foreach(ntree=rep(2500, 4), 
+                    .combine=combine,
+                    .packages='randomForest') %dopar%
+            randomForest(Species~., data=iris, ntree=ntree)
+      stopCluster(cl)
+})
+## directly use sequential programming
+srf.time<-system.time(
+      randomForest(Species~., data=iris, ntree=10000)
+)
+
+prf.time
+srf.time
+
+```
+
+
 Here is an example using doParallel and foreach package to do GLM based on bootstraped data.
 
 ```{r}
@@ -73,7 +101,7 @@ registerDoParallel(cl)
 
 ## iris dataset 
 x<- iris[which(iris[,5]!='setosa'),c(1,5)]
-trials<- 10000
+trials<- 1000
 # Parallel Computing
 ptime<- system.time({
       ## icount count number of times that the iterator will fire. 
@@ -98,4 +126,7 @@ ptime
 stime
 ```
 
+
+
+As you may find from some resules. If the model is too simple, like random forest and bootstraping, it may not be a good idea to use parallel programming, because it will take too much time communication with each core compared with sequential programming. However, when using more complex model like GLM, we can save a lot of time by using parallel programming.
 

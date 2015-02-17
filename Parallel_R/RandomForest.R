@@ -1,5 +1,6 @@
+library(doParallel)
 library(randomForest)
-system.time({
+prf.time<-system.time({
       cl <- makeCluster(4)
       registerDoParallel(cl)
       rf <- foreach(ntree=rep(2500, 4), 
@@ -9,7 +10,9 @@ system.time({
       stopCluster(cl)
 })
 
-system.time(
+srf.time<-system.time(
       randomForest(Species~., data=iris, ntree=10000)
 )
 
+prf.time
+srf.time
