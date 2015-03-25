@@ -1,15 +1,12 @@
 ---
 title: "Parallel_R"
 author: "Cheng Ju"
-date: "2/16/2015"
+date: "3/16/2015"
 output: pdf_document
 ---
 
-The doParallel package is a “parallel backend” for the foreach package. It provides a mechanism
-needed to execute foreach loops in parallel. The foreach package must be used in conjunction
-with a package such as doParallel in order to execute code in parallel. The user must register a
-parallel backend to use, otherwise foreach will execute tasks sequentially, even when the %dopar%
-operator is used.
+
+# Useful reference
 
 - For more information about the foreach package in R, you can visit the web: http://cran.r-project.org/web/packages/foreach/vignettes/foreach.pdf
 
@@ -18,6 +15,57 @@ http://cran.r-project.org/web/packages/doParallel/doParallel.pdf
 
 - and for more examples, I suggest you to read 
 http://cran.r-project.org/web/packages/doParallel/vignettes/gettingstartedParallel.pdf
+
+- Most parts are cited from workshop by Chris Paciorek in stat department. Full workshop will cover more materials, which you can find in his webpage:
+http://www.stat.berkeley.edu/~paciorek/
+
+###Note: 
+to allow for parallelization, before starting the BCE VM, go to Machine > Settings, select System and increase the number of processors. You may also want to increase the amount of memory.
+
+# Basic shared memory parallel programming
+
+
+A simple way to exploit parallelism in R when you have an embarrassingly parallel problem (one where you can split the problem up into independent chunks) is to use the foreach package to do a for loop in parallel. For example, bootstrapping, random forests, simulation studies, cross- validation and many other statistical methods can be handled in this way. You would not want to use foreach if the iterations were not independent of each other.
+
+The doParallel package is a “parallel backend” for the foreach package. It provides a mechanism
+needed to execute foreach loops in parallel. The foreach package must be used in conjunction
+with a package such as doParallel in order to execute code in parallel. The user must register a
+parallel backend to use, otherwise foreach will execute tasks sequentially, even when the %dopar%
+operator is used.
+
+
+
+# Getting started 
+
+```{r}
+library(doParallel)
+x <- foreach(i=1:4) %do% sqrt(i)
+x
+```
+
+This is a bit odd looking, because it looks vaguely like a for loop, but is implemented using a
+binary operator, called %do%. Also, unlike a for loop, it returns a value. This is quite important.
+The purpose of this statement is to compute the list of results. Generally, foreach with %do% is
+used to execute an R expression repeatedly, and return the results in some data structure or object,
+which is a list by default.
+
+
+So far, all of our examples have returned a list of results. This is a good default, since a list can
+contain any R object. But sometimes we’d like the results to be returned in a numeric vector, for
+example. This can be done by using the .combine option to foreach:
+
+```{r}
+x <- foreach(i=1:4, .combine='c') %do% exp(i)
+x
+
+y <- foreach(i=1:4, .combine='cbind') %do% rnorm(5)
+y
+```
+
+You can also specify a user-written function to combine the results. 
+
+
+# Apply functions to array
 
 The Collatz conjecture is a conjecture in mathematics named after Lothar Collatz, who first proposed it in 1937. 
 
@@ -37,14 +85,21 @@ func <- function(x) {
       }
       return(c(raw,n))
 }
-size<- 1e4
+
+```
+
+
+
+
+
+```{r}
+size<-10000
 Eptime<- system.time({
-      psteps <- foreach(x=1:size,.combine='rbind') %dopar% func(x)
+      psteps <- foreach(x=1:size,.combine='rbind') %dopar% func(x) 
       stopCluster(cl)
 })
-## Return which number will take most iteration to get 1.
+## Return which number will take most iteration to get 1. 
 psteps[which.max(psteps[,2]),]
-Eptime
 
 
 ```
@@ -58,10 +113,22 @@ Estime<- system.time({
       ssteps <- foreach(x=1:size,.combine='rbind') %do% func(x)
 })
 ssteps[which.max(ssteps[,2]),]
+
+Eptime
 Estime
 ```
 
+# Exercise
 
+If we want to calculate the variance of some statistic, we can use boostrap. For example, we can use boostrap to calculate the variance of median of exponential distribution. How to do this only use function "foreach", "median", and "sample"? 
+
+
+
+
+# Statistical model based on parallel
+
+
+Random forest is easy to do by parallel programming. For argument "combine" of foreach, we can directly use "combine" so collect the results in different cores.
 
 Here is an example using doParallel and foreach package to do randorm forest. 
 ```{r}
@@ -78,7 +145,7 @@ prf.time<-system.time({
             randomForest(Species~., data=iris, ntree=ntree)
       stopCluster(cl)
 })
-## directly use sequential programming
+## directly use sequential programming getting 10000 trees
 srf.time<-system.time(
       randomForest(Species~., data=iris, ntree=10000)
 )
@@ -101,7 +168,7 @@ registerDoParallel(cl)
 
 ## iris dataset 
 x<- iris[which(iris[,5]!='setosa'),c(1,5)]
-trials<- 1000
+trials<- 100
 # Parallel Computing
 ptime<- system.time({
       ## icount count number of times that the iterator will fire. 
@@ -126,7 +193,44 @@ ptime
 stime
 ```
 
+## Exercise
+- How to use the model to do prediction using parallel programming?
 
 
 As you may find from some resules. If the model is too simple, like random forest and bootstraping, it may not be a good idea to use parallel programming, because it will take too much time communication with each core compared with sequential programming. However, when using more complex model like GLM, we can save a lot of time by using parallel programming.
+
+So far we have discussed some samples of shared memory parallel programming. Sometimes we may need parallel in distributed memory. If you can do your computation on the cores of a single node using shared memory, that will be faster than using the same number of cores (or even somewhat more cores) across multiple nodes. Similarly, jobs with a lot of data/high memory requirements that one might think of as requiring Hadoop may in some cases be much faster if you can find a single machine with a lot of memory.
+
+# How to use SCF/biostat cluster
+
+You can find some details here:
+http://statistics.berkeley.edu/computing/servers/cluster#access-job-restrictions
+
+##How to upload files to cluster
+
+- Before connect to cluster, change into your working direction
+- In command line, type: **sftp user@arwen.berkeley.edu**
+- upload files (for example, you want use simulate.R): **put simulate.R**
+- close sftp: **quit**
+
+You can also use "get" command to get files from cluster.
+
+In this step, we are not using the shell of remote computer. Hence "tap" can not be used. You should make sure the name of file is correct.
+
+##How to run code in cluster
+
+- Prepare a **shell script** containing the instructions you would like the system to execute. For example a simple script to run an R program called '*simulate.R*' would contain the single line: **R CMD BATCH --no-save simulate.R simulate.out**
+
+- Connect to cluster: **ssh user@arwen.berkeley.edu**
+
+- In Unix-like operating systems, chmod is the command and system call which may change the access
+permissions to file system objects (You can think it like a permission for the file): **chmod 755 job.sh**
+
+- You shoule see "Your job XXXXXXXX ("job.sh") has been submitted". If you want to see status of your job, just type in command line: **qstat**
+
+- After you type 'qstat', you will just look at 'queue', you will find something like this:
+*low.q@scf-sm001.Berkeley.EDU*. This is the mathine that running your code. If you want find details, just use **qrsh -q interactive.q -l hostname=scf-sm001** and **top** (you can use control+c to exit from top) command to find detail information. After that, you can type exit to quit.
+
+- Finally, just look at your out file: **cat Simulate.Rout**
+
 

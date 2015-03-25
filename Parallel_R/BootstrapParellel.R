@@ -5,7 +5,7 @@ library(doParallel)
 data<- rexp(100,rate=3) #generate 100 exponential data
 
 ##set the number of bootstraping
-B=1000
+B=10000
 
 cl <- makeCluster(2)
 registerDoParallel(cl)
