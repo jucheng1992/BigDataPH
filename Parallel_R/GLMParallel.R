@@ -7,7 +7,7 @@ registerDoParallel(cl)
 
 ## iris dataset 
 x<- iris[which(iris[,5]!='setosa'),c(1,5)]
-trials<- 1e5
+trials<- 10000
 # Parallel Computing
 ptime<- system.time({
       ## icount count number of times that the iterator will fire. 

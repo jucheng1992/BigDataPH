@@ -2,7 +2,7 @@
 title: "Parallel_R"
 author: "Cheng Ju"
 date: "3/16/2015"
-output: pdf_document
+output: html_document
 ---
 
 
@@ -209,9 +209,9 @@ http://statistics.berkeley.edu/computing/servers/cluster#access-job-restrictions
 ##How to upload files to cluster
 
 - Before connect to cluster, change into your working direction
-- In command line, type: **sftp user@arwen.berkeley.edu**
-- upload files (for example, you want use simulate.R): **put simulate.R**
-- close sftp: **quit**
+- In command line, type: `sftp user@arwen.berkeley.edu`
+- upload files (for example, you want use simulate.R): `put simulate.R`
+- close sftp: `quit`
 
 You can also use "get" command to get files from cluster.
 
@@ -221,16 +221,16 @@ In this step, we are not using the shell of remote computer. Hence "tap" can not
 
 - Prepare a **shell script** containing the instructions you would like the system to execute. For example a simple script to run an R program called '*simulate.R*' would contain the single line: **R CMD BATCH --no-save simulate.R simulate.out**
 
-- Connect to cluster: **ssh user@arwen.berkeley.edu**
+- Connect to cluster: `ssh user@arwen.berkeley.edu`
 
 - In Unix-like operating systems, chmod is the command and system call which may change the access
-permissions to file system objects (You can think it like a permission for the file): **chmod 755 job.sh**
+permissions to file system objects (You can think it like a permission for the file): `chmod 755 job.sh`
 
-- You shoule see "Your job XXXXXXXX ("job.sh") has been submitted". If you want to see status of your job, just type in command line: **qstat**
+- You shoule see "Your job XXXXXXXX ("job.sh") has been submitted". If you want to see status of your job, just type in command line: `qstat`
 
 - After you type 'qstat', you will just look at 'queue', you will find something like this:
-*low.q@scf-sm001.Berkeley.EDU*. This is the mathine that running your code. If you want find details, just use **qrsh -q interactive.q -l hostname=scf-sm001** and **top** (you can use control+c to exit from top) command to find detail information. After that, you can type exit to quit.
+*low.q@scf-sm001.Berkeley.EDU*. This is the mathine that running your code. If you want find details, just use `qrsh -q interactive.q -l hostname=scf-sm001` and `top` (you can use control+c to exit from top) command to find detail information. After that, you can type exit to quit.
 
-- Finally, just look at your out file: **cat Simulate.Rout**
+- Finally, just look at your out file: `cat Simulate.Rout`
 
 
