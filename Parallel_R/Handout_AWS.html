@@ -180,15 +180,15 @@ prf.time&lt;-system.time({
 })
 
 srf.time&lt;-system.time(
-      randomForest(as.factor(quality)~., curr, ntree=1000)
+      randomForest(as.factor(quality)~., curr, ntree=10000)
 )
 
 prf.time</code></pre>
 <pre><code>##    user  system elapsed 
-##  14.014   5.851  62.479</code></pre>
+##  14.163   5.354  59.261</code></pre>
 <pre class="r"><code>srf.time</code></pre>
 <pre><code>##    user  system elapsed 
-##   8.331   0.184   8.520</code></pre>
+##   88.51    2.61   92.14</code></pre>
 <pre class="r"><code>summary(rf)</code></pre>
 <pre><code>##                 Length Class  Mode     
 ## call                4  -none- call     
@@ -210,17 +210,17 @@ prf.time</code></pre>
 ## terms               3  terms  call</code></pre>
 <pre class="r"><code>importance(rf)</code></pre>
 <pre><code>##                      MeanDecreaseGini
-## fixed.acidity                   251.8
-## volatile.acidity                331.3
-## citric.acid                     274.8
-## residual.sugar                  288.6
-## chlorides                       289.2
-## free.sulfur.dioxide             296.0
-## total.sulfur.dioxide            292.6
-## density                         364.8
-## pH                              288.6
-## sulphates                       269.5
-## alcohol                         359.8</code></pre>
+## fixed.acidity                   251.9
+## volatile.acidity                330.7
+## citric.acid                     275.0
+## residual.sugar                  288.7
+## chlorides                       289.1
+## free.sulfur.dioxide             295.7
+## total.sulfur.dioxide            292.3
+## density                         364.3
+## pH                              289.0
+## sulphates                       269.3
+## alcohol                         361.4</code></pre>
 <p>This is the result complied by my own computer. We can compared it with the result from instance.</p>
 </div>
 

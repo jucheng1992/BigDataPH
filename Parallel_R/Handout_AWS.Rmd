@@ -143,7 +143,7 @@ prf.time<-system.time({
       cl <- makeCluster(4)
       registerDoParallel(cl)
       ## each cluster, we set 2500 trees
-      rf <- foreach(ntree=rep(2500, 4), 
+      rf <- foreach(ntree=rep(250, 4), 
                     .combine=combine,
                     .packages='randomForest') %dopar%
             randomForest(as.factor(quality)~., data=curr, ntree=ntree)
@@ -151,7 +151,7 @@ prf.time<-system.time({
 })
 
 srf.time<-system.time(
-      randomForest(as.factor(quality)~., curr, ntree=10000)
+      randomForest(as.factor(quality)~., curr, ntree=1000)
 )
 
 prf.time
@@ -161,5 +161,53 @@ importance(rf)
 
 ```
 
-This is the result complied by my own computer. We can compared it with the result from instance.
+This is the result complied by my own computer. Then we can upload this R file to AWS instance. Then just use command `R CMD BATCH Winedata.R RF.Rout` to run the parallized RF on instance. Then we use `cat RF.Rout` to look at the result.
+
+`
+
+> prf.time
+   user  system elapsed 
+ 11.682   2.714  49.688 
+> srf.time
+   user  system elapsed 
+ 91.189   1.386  92.578 
+> summary(rf)
+                Length Class  Mode     
+call                4  -none- call     
+type                1  -none- character
+predicted        4898  factor numeric  
+votes           34286  -none- numeric  
+oob.times        4898  -none- numeric  
+classes             7  -none- character
+importance         11  -none- numeric  
+importanceSD        0  -none- numeric  
+localImportance     0  -none- NULL     
+proximity           0  -none- NULL     
+ntree               1  -none- numeric  
+mtry                1  -none- numeric  
+forest             14  -none- list     
+y                4898  factor numeric  
+test                0  -none- NULL     
+inbag               0  -none- NULL     
+terms               3  terms  call     
+> importance(rf)
+                     MeanDecreaseGini
+fixed.acidity                252.1952
+volatile.acidity             330.9620
+citric.acid                  275.8733
+residual.sugar               287.4994
+chlorides                    288.1879
+free.sulfur.dioxide          296.7120
+total.sulfur.dioxide         291.9906
+density                      364.5575
+pH                           288.5167
+sulphates                    268.6880
+alcohol                      361.9772
+> 
+> proc.time()
+   user  system elapsed 
+103.800   4.151 143.243 
+
+`
+
 

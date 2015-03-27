@@ -11,7 +11,7 @@ prf.time<-system.time({
       cl <- makeCluster(4)
       registerDoParallel(cl)
       ## each cluster, we set 2500 trees
-      rf <- foreach(ntree=rep(2500, 4), 
+      rf <- foreach(ntree=rep(250, 4), 
                     .combine=combine,
                     .packages='randomForest') %dopar%
             randomForest(as.factor(quality)~., data=curr, ntree=ntree)
@@ -19,7 +19,7 @@ prf.time<-system.time({
 })
 
 srf.time<-system.time(
-      randomForest(as.factor(quality)~., curr, ntree=10000)
+      randomForest(as.factor(quality)~., curr, ntree=1000)
 )
 
 prf.time
