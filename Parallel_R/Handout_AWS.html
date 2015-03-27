@@ -129,7 +129,11 @@ sudo apt-get install mongodb</code></pre>
 </div>
 <div id="data-analysis-using-ec2" class="section level1">
 <h1>Data analysis using EC2</h1>
-<p>‘wget “<a href="https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-white.csv">https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-white.csv</a>”’</p>
+<p>Here is example of how to do simple data analysis one EC2. We want to some daya analysis using the data from UCI machine learning repository. And we need to analyze the Wine Quality Data Set.</p>
+<p>First, we download data from data repository. We just open the website <a href="https://archive.ics.uci.edu/ml/datasets/Wine+Quality">https://archive.ics.uci.edu/ml/datasets/Wine+Quality</a></p>
+<p>And copy the link address, download it using command line:</p>
+<p><code>wget &quot;https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-white.csv&quot;</code></p>
+<p>Then we read our data:</p>
 <pre class="r"><code>winedata&lt;-read.csv2(&quot;winequality-white.csv&quot;, header = TRUE)
 
 head(winedata)</code></pre>
@@ -154,6 +158,70 @@ head(winedata)</code></pre>
 ## 4       6
 ## 5       6
 ## 6       6</code></pre>
+<p>This is a classfication problem. So maybe we can try using random forest. We can also use doParallel package to do the parallel programming. As we can request compueter with four cores, we can set number of nodes equals 4.</p>
+<pre class="r"><code>library(doParallel)</code></pre>
+<pre><code>## Loading required package: foreach
+## Loading required package: iterators
+## Loading required package: parallel</code></pre>
+<pre class="r"><code>library(randomForest)</code></pre>
+<pre><code>## randomForest 4.6-10
+## Type rfNews() to see new features/changes/bug fixes.</code></pre>
+<pre class="r"><code>curr&lt;-data.matrix(winedata)
+
+prf.time&lt;-system.time({
+      cl &lt;- makeCluster(4)
+      registerDoParallel(cl)
+      ## each cluster, we set 2500 trees
+      rf &lt;- foreach(ntree=rep(250, 4), 
+                    .combine=combine,
+                    .packages='randomForest') %dopar%
+            randomForest(as.factor(quality)~., data=curr, ntree=ntree)
+      stopCluster(cl)
+})
+
+srf.time&lt;-system.time(
+      randomForest(as.factor(quality)~., curr, ntree=1000)
+)
+
+prf.time</code></pre>
+<pre><code>##    user  system elapsed 
+##   1.942   0.336   6.817</code></pre>
+<pre class="r"><code>srf.time</code></pre>
+<pre><code>##    user  system elapsed 
+##   8.889   0.206   9.129</code></pre>
+<pre class="r"><code>summary(rf)</code></pre>
+<pre><code>##                 Length Class  Mode     
+## call                4  -none- call     
+## type                1  -none- character
+## predicted        4898  factor numeric  
+## votes           34286  -none- numeric  
+## oob.times        4898  -none- numeric  
+## classes             7  -none- character
+## importance         11  -none- numeric  
+## importanceSD        0  -none- numeric  
+## localImportance     0  -none- NULL     
+## proximity           0  -none- NULL     
+## ntree               1  -none- numeric  
+## mtry                1  -none- numeric  
+## forest             14  -none- list     
+## y                4898  factor numeric  
+## test                0  -none- NULL     
+## inbag               0  -none- NULL     
+## terms               3  terms  call</code></pre>
+<pre class="r"><code>importance(rf)</code></pre>
+<pre><code>##                      MeanDecreaseGini
+## fixed.acidity                   251.0
+## volatile.acidity                332.0
+## citric.acid                     275.3
+## residual.sugar                  289.3
+## chlorides                       288.6
+## free.sulfur.dioxide             293.9
+## total.sulfur.dioxide            292.1
+## density                         365.3
+## pH                              289.2
+## sulphates                       271.6
+## alcohol                         359.3</code></pre>
+<p>This is the result complied by my own computer. We can compared it with the result from instance.</p>
 </div>
 
 
