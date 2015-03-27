@@ -1,0 +1,164 @@
+---
+title: "Using R on AWS"
+author: "Cheng Ju"
+date: "3/24/2015"
+output: html_document
+---
+
+#Connect to instance
+
+
+Just change direction to the aws file, you will find file called Vagrantfile. You can change the remote machine you use by modify this file. You have three options and you can choos one by make '#' comment on the other two lines. Also you can list other kind computers in this text file.
+
+Then use command `vagrant up` and then `vagrant ssh` to connect to the instance you creat.
+
+And to check the status of the instance, you can log in to the website:
+https://ph290-2015-spring-uq6b1f1.signin.aws.amazon.com/console
+
+#Install R and Rstudio on server
+
+##Installing Base R
+Create a user, home directory and set password
+
+`sudo useradd rstudio`
+
+`sudo mkdir /home/rstudio`
+
+`sudo passwd rstudio`
+
+`sudo chmod -R 0777 /home/rstudio`
+
+update all files from the default state:
+
+`sudo apt-get update`
+
+`sudo apt-get upgrade`
+ 
+Then add CRAN mirror to custom sources.list file using vi
+
+`sudo vi /etc/apt/sources.list.d/sources.list`
+ 
+Add following line (or your favorite CRAN mirror)
+
+`deb http://lib.stat.cmu.edu/R/CRAN/bin/linux/ubuntu precise/`
+ 
+Update files to use CRAN mirror (Don't worry about error message)
+
+`sudo apt-get update`
+ 
+Install latest version of R
+
+`sudo apt-get install r-base`
+
+##Installing R-studio
+With these commands run, you will now be able to run R from the command line just by typing “R” at the prompt. We can also install R-studio, which makes working in R so much easier.
+
+Fierst, we need to install a few background files
+
+`sudo apt-get install gdebi-core`
+
+`sudo apt-get install libapparmor1`
+ 
+Then we change to a writeable directory. Download & Install RStudio Server
+
+`cd /tmp`
+
+`wget http://download2.rstudio.org/rstudio-server-0.97.336-amd64.deb`
+
+`sudo gdebi rstudio-server-0.97.336-amd64.deb`
+
+#Installing MySQL, MongoDB
+
+```
+#Install MySQL
+sudo apt-get install mysql-common
+sudo apt-get install mysql-server
+#Install MongoDB
+sudo apt-get install mongodb
+```
+
+#Download data and code from website
+
+If you familiar with unix command, this part is very simple. I suggest you can writing your code on your own machine using small chunk of the data. After you make sure your code is correct, you can transport your code and data to the instance.
+
+After creat your instance, you can use command `lscpu` to see the performence of the instance.
+
+Here we just use the example from parallel programming: use the shared memory parallel programming on EC2.
+
+You can direct download dataset and code from internet using 'wget' command. For example, you can down load code from my github:
+
+`wget "https://github.com/jucheng1992/BigDataPH/blob/master/Parallel_R/GLMParallel.R"`
+
+Then we can run the code by:
+
+`R CMD BATCH GLMParallel.R GLMParallel.Rout`
+
+The last second parameter "GLMParallel.R" means you want to run this file. The last parameter means you want to store your result in "GLMParallel.R"
+
+Then you may want to find your result: 'cat GLMParallel.Rout', you will see the details of your reuslt:
+```
+ptime
+   user  system elapsed 
+  4.479   0.163  23.234 
+> stime
+   user  system elapsed 
+ 41.534   0.000  41.529 
+> 
+> proc.time()
+   user  system elapsed 
+ 46.384   0.172  65.466 
+```
+
+
+
+#Data analysis using EC2
+
+Here is example of how to do simple data analysis one EC2. We want to some daya analysis using the data from UCI machine learning repository. And we need to analyze the Wine Quality Data Set. 
+
+First, we download data from data repository. We just open the website https://archive.ics.uci.edu/ml/datasets/Wine+Quality
+
+And copy the link address, download it using command line:
+
+`wget "https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-white.csv"`
+
+Then we read our data:
+
+```{r}
+winedata<-read.csv2("winequality-white.csv", header = TRUE)
+
+head(winedata)
+
+```
+
+This is a classfication problem. So maybe we can try using random forest. We can also use doParallel package to do the parallel programming. As we can request compueter with four cores, we can set number of nodes equals 4.
+
+
+```{r}
+library(doParallel)
+library(randomForest)
+
+curr<-data.matrix(winedata)
+
+prf.time<-system.time({
+      cl <- makeCluster(4)
+      registerDoParallel(cl)
+      ## each cluster, we set 2500 trees
+      rf <- foreach(ntree=rep(250, 4), 
+                    .combine=combine,
+                    .packages='randomForest') %dopar%
+            randomForest(as.factor(quality)~., data=curr, ntree=ntree)
+      stopCluster(cl)
+})
+
+srf.time<-system.time(
+      randomForest(as.factor(quality)~., curr, ntree=1000)
+)
+
+prf.time
+srf.time
+summary(rf)
+importance(rf)
+
+```
+
+
