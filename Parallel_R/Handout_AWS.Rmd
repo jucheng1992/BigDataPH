@@ -151,7 +151,7 @@ prf.time<-system.time({
 })
 
 srf.time<-system.time(
-      randomForest(as.factor(quality)~., curr, ntree=1000)
+      randomForest(as.factor(quality)~., curr, ntree=10000)
 )
 
 prf.time

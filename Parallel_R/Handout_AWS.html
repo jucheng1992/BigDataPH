@@ -172,7 +172,7 @@ prf.time&lt;-system.time({
       cl &lt;- makeCluster(4)
       registerDoParallel(cl)
       ## each cluster, we set 2500 trees
-      rf &lt;- foreach(ntree=rep(250, 4), 
+      rf &lt;- foreach(ntree=rep(2500, 4), 
                     .combine=combine,
                     .packages='randomForest') %dopar%
             randomForest(as.factor(quality)~., data=curr, ntree=ntree)
@@ -185,10 +185,10 @@ srf.time&lt;-system.time(
 
 prf.time</code></pre>
 <pre><code>##    user  system elapsed 
-##   1.942   0.336   6.817</code></pre>
+##  14.014   5.851  62.479</code></pre>
 <pre class="r"><code>srf.time</code></pre>
 <pre><code>##    user  system elapsed 
-##   8.889   0.206   9.129</code></pre>
+##   8.331   0.184   8.520</code></pre>
 <pre class="r"><code>summary(rf)</code></pre>
 <pre><code>##                 Length Class  Mode     
 ## call                4  -none- call     
@@ -210,17 +210,17 @@ prf.time</code></pre>
 ## terms               3  terms  call</code></pre>
 <pre class="r"><code>importance(rf)</code></pre>
 <pre><code>##                      MeanDecreaseGini
-## fixed.acidity                   251.0
-## volatile.acidity                332.0
-## citric.acid                     275.3
-## residual.sugar                  289.3
-## chlorides                       288.6
-## free.sulfur.dioxide             293.9
-## total.sulfur.dioxide            292.1
-## density                         365.3
-## pH                              289.2
-## sulphates                       271.6
-## alcohol                         359.3</code></pre>
+## fixed.acidity                   251.8
+## volatile.acidity                331.3
+## citric.acid                     274.8
+## residual.sugar                  288.6
+## chlorides                       289.2
+## free.sulfur.dioxide             296.0
+## total.sulfur.dioxide            292.6
+## density                         364.8
+## pH                              288.6
+## sulphates                       269.5
+## alcohol                         359.8</code></pre>
 <p>This is the result complied by my own computer. We can compared it with the result from instance.</p>
 </div>
 
