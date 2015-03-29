@@ -5,6 +5,7 @@ winedata<-read.csv2("winequality-white.csv", header = TRUE)
 
 head(winedata)
 
+##change factor into numerical data
 curr<-data.matrix(winedata)
 
 prf.time<-system.time({
@@ -19,7 +20,7 @@ prf.time<-system.time({
 })
 
 srf.time<-system.time(
-      randomForest(as.factor(quality)~., curr, ntree=1000)
+      srf<-randomForest(as.factor(quality)~., curr, ntree=1000)
 )
 
 prf.time

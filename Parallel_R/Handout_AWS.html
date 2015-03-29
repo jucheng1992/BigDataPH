@@ -60,8 +60,8 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 
 <div id="connect-to-instance" class="section level1">
 <h1>Connect to instance</h1>
-<p>Just change direction to the aws file, you will find file called Vagrantfile. You can change the remote machine you use by modify this file. You have three options and you can choos one by make ‘#’ comment on the other two lines. Also you can list other kind computers in this text file.</p>
-<p>Then use command <code>vagrant up</code> and then <code>vagrant ssh</code> to connect to the instance you creat.</p>
+<p>After changing into the aws file, you will find file called Vagrantfile. You can change the remote machine you use by modify this file. You have three options and you can choos one by make ‘#’ comment on the other two lines. Also you can list other kind computers in this text file.</p>
+<p>Then use command <code>vagrant up</code> and then <code>vagrant ssh</code> to connect to the instance you created.</p>
 <p>And to check the status of the instance, you can log in to the website: <a href="https://ph290-2015-spring-uq6b1f1.signin.aws.amazon.com/console">https://ph290-2015-spring-uq6b1f1.signin.aws.amazon.com/console</a></p>
 </div>
 <div id="install-r-and-rstudio-on-server" class="section level1">
@@ -76,9 +76,9 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 <p>update all files from the default state:</p>
 <p><code>sudo apt-get update</code></p>
 <p><code>sudo apt-get upgrade</code></p>
-<p>Then add CRAN mirror to custom sources.list file using vi</p>
+<p>Then add CRAN mirror to custom sources.list file using vi (optional)</p>
 <p><code>sudo vi /etc/apt/sources.list.d/sources.list</code></p>
-<p>Add following line (or your favorite CRAN mirror)</p>
+<p>Then add following line (or your favorite CRAN mirror)</p>
 <p><code>deb http://lib.stat.cmu.edu/R/CRAN/bin/linux/ubuntu precise/</code></p>
 <p>Update files to use CRAN mirror (Don’t worry about error message)</p>
 <p><code>sudo apt-get update</code></p>
@@ -87,7 +87,7 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 </div>
 <div id="installing-r-studio" class="section level2">
 <h2>Installing R-studio</h2>
-<p>With these commands run, you will now be able to run R from the command line just by typing “R” at the prompt. We can also install R-studio, which makes working in R so much easier.</p>
+<p>With these commands, you will now be able to run R from the command line just by typing “R” at the prompt. We can also install R-studio, which makes working in R so much easier.</p>
 <p>Fierst, we need to install a few background files</p>
 <p><code>sudo apt-get install gdebi-core</code></p>
 <p><code>sudo apt-get install libapparmor1</code></p>
@@ -97,17 +97,20 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 <p><code>sudo gdebi rstudio-server-0.97.336-amd64.deb</code></p>
 </div>
 </div>
-<div id="installing-mysql-mongodb" class="section level1">
-<h1>Installing MySQL, MongoDB</h1>
+<div id="installing-mysql-mongodb-emacs" class="section level1">
+<h1>Installing MySQL, MongoDB, Emacs</h1>
+<p>Also you can install other packages by the similar method.</p>
 <pre><code>#Install MySQL
 sudo apt-get install mysql-common
 sudo apt-get install mysql-server
 #Install MongoDB
-sudo apt-get install mongodb</code></pre>
+sudo apt-get install mongodb
+#Install Emacs
+sudo apt-get install emacs</code></pre>
 </div>
 <div id="download-data-and-code-from-website" class="section level1">
 <h1>Download data and code from website</h1>
-<p>If you familiar with unix command, this part is very simple. I suggest you can writing your code on your own machine using small chunk of the data. After you make sure your code is correct, you can transport your code and data to the instance.</p>
+<p>If you familiar with unix command, this part is very simple. I suggest to write code on your own machine using small chunk of the data. After making sure your code is correct, you can transport your code and data to the instance.</p>
 <p>After creat your instance, you can use command <code>lscpu</code> to see the performence of the instance.</p>
 <p>Here we just use the example from parallel programming: use the shared memory parallel programming on EC2.</p>
 <p>You can direct download dataset and code from internet using ‘wget’ command. For example, you can down load code from my github:</p>
@@ -158,7 +161,7 @@ head(winedata)</code></pre>
 ## 4       6
 ## 5       6
 ## 6       6</code></pre>
-<p>This is a classfication problem. So maybe we can try using random forest. We can also use doParallel package to do the parallel programming. As we can request compueter with four cores, we can set number of nodes equals 4.</p>
+<p>This is a classfication problem. So maybe we can try using random forest. We can also use doParallel package to do the parallel programming. As we can request compueter with four cores, we can set number of nodes equals 4. At last, we want to know which feature is the most important.</p>
 <pre class="r"><code>library(doParallel)</code></pre>
 <pre><code>## Loading required package: foreach
 ## Loading required package: iterators
@@ -166,13 +169,14 @@ head(winedata)</code></pre>
 <pre class="r"><code>library(randomForest)</code></pre>
 <pre><code>## randomForest 4.6-10
 ## Type rfNews() to see new features/changes/bug fixes.</code></pre>
-<pre class="r"><code>curr&lt;-data.matrix(winedata)
+<pre class="r"><code>##change factor into numerical data
+curr&lt;-data.matrix(winedata)
 
 prf.time&lt;-system.time({
       cl &lt;- makeCluster(4)
       registerDoParallel(cl)
       ## each cluster, we set 2500 trees
-      rf &lt;- foreach(ntree=rep(2500, 4), 
+      rf &lt;- foreach(ntree=rep(250, 4), 
                     .combine=combine,
                     .packages='randomForest') %dopar%
             randomForest(as.factor(quality)~., data=curr, ntree=ntree)
@@ -180,15 +184,15 @@ prf.time&lt;-system.time({
 })
 
 srf.time&lt;-system.time(
-      randomForest(as.factor(quality)~., curr, ntree=10000)
+      srf&lt;-randomForest(as.factor(quality)~., curr, ntree=1000)
 )
 
 prf.time</code></pre>
 <pre><code>##    user  system elapsed 
-##  14.163   5.354  59.261</code></pre>
+##   1.984   0.345   6.839</code></pre>
 <pre class="r"><code>srf.time</code></pre>
 <pre><code>##    user  system elapsed 
-##   88.51    2.61   92.14</code></pre>
+##   8.962   0.194   9.277</code></pre>
 <pre class="r"><code>summary(rf)</code></pre>
 <pre><code>##                 Length Class  Mode     
 ## call                4  -none- call     
@@ -210,18 +214,90 @@ prf.time</code></pre>
 ## terms               3  terms  call</code></pre>
 <pre class="r"><code>importance(rf)</code></pre>
 <pre><code>##                      MeanDecreaseGini
-## fixed.acidity                   251.9
-## volatile.acidity                330.7
-## citric.acid                     275.0
-## residual.sugar                  288.7
-## chlorides                       289.1
+## fixed.acidity                   250.4
+## volatile.acidity                331.0
+## citric.acid                     275.5
+## residual.sugar                  288.3
+## chlorides                       288.1
 ## free.sulfur.dioxide             295.7
-## total.sulfur.dioxide            292.3
-## density                         364.3
-## pH                              289.0
+## total.sulfur.dioxide            295.1
+## density                         365.4
+## pH                              289.2
 ## sulphates                       269.3
-## alcohol                         361.4</code></pre>
-<p>This is the result complied by my own computer. We can compared it with the result from instance.</p>
+## alcohol                         359.6</code></pre>
+<p>This is the result complied by my own computer. Then we can upload this R file to AWS instance. Then just use command <code>R CMD BATCH Winedata.R RF.Rout</code> to run the parallelized RF on instance. Then we use <code>cat RF.Rout</code> to look at the result.</p>
+<pre><code>
+&gt; prf.time
+   user  system elapsed 
+  1.198   0.293   6.129 
+&gt; srf.time
+   user  system elapsed 
+  9.182   0.097   9.278 
+</code></pre>
+<div id="cross-validation" class="section level2">
+<h2>Cross validation</h2>
+<p>After doing some analysis, we may want to do cross-validation to make sure we did not overfit. Here we can also write function to do parallelized cross validation. Here is an example to do parallelized k-fold cross-validation.</p>
+<p>First, we write a function to split the data into k trunks. The input is the data.The out put is a list, with the k-th element to be the index of the k-th fold.</p>
+<pre class="r"><code>dataSplit = function(data, k, random.seed = NULL) {
+    # Set seed to reproduce the same result
+    if (!is.null(random.seed)) 
+        set.seed(random.seed)
+
+    n = nrow(data)
+    m = n%/%k
+    index = 1:n
+
+    # Split into k folds
+    ans = vector(k, mode = &quot;list&quot;)
+    for (i in 1:(k - 1)) {
+        ans[[i]] = sample(index, m)
+        # move index out of our candidate index set
+        index = setdiff(index, ans[[i]])
+    }
+    ans[[k]] = index
+    return(ans)
+}</code></pre>
+<p>Then we write cross-validation function. Here we want to do CV for random frest. The input is the data, the number of fold, the formula, and cv.index (which comes from datasplit function). The out put is just the model that only trained by the training data.</p>
+<pre class="r"><code>crossValidation = function(data, cv.index, i, formula.text) {
+    n = nrow(data)
+    # Use k_th fold as test set
+    test.ind = cv.index[[i]]
+    # Use the rest of data as training set
+    train.ind = setdiff(1:n, test.ind)
+    train.data = data[train.ind, ]
+    test.data = data[test.ind, ]
+
+    rp.model = randomForest(as.formula(formula.text), data = train.data,ntree=1000)
+    rp.model
+}</code></pre>
+<p>Here we just apply the datasplit and crossValidation functions to our wine dataset.</p>
+<pre class="r"><code>cv.index = dataSplit(data = winedata, k = 5, random.seed = 128)
+k = 5
+cv.model = vector(k, mode = &quot;list&quot;)
+scv.time&lt;-system.time({
+    for (i in 1:k) {
+        cv.model[[i]] = crossValidation(curr, cv.index, i, &quot;as.factor(quality)~.&quot;)
+    }
+})
+
+
+cl &lt;- makeCluster(4)
+registerDoParallel(cl)
+pcv.time&lt;-system.time({
+    cv.model &lt;- foreach(i = 1:k, .packages = c(&quot;randomForest&quot;)) %dopar% {
+        crossValidation(curr, cv.index, i, &quot;as.factor(quality)~.&quot;)
+    }
+})
+stopCluster(cl)
+
+scv.time</code></pre>
+<pre><code>##    user  system elapsed 
+##  34.018   0.552  34.750</code></pre>
+<pre class="r"><code>pcv.time</code></pre>
+<pre><code>##    user  system elapsed 
+##   1.395   0.795  19.698</code></pre>
+<p>Similarly, we can put our file on the AWS, use the similar command.</p>
+</div>
 </div>
 
 

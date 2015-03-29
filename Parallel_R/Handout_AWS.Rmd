@@ -8,9 +8,9 @@ output: html_document
 #Connect to instance
 
 
-Just change direction to the aws file, you will find file called Vagrantfile. You can change the remote machine you use by modify this file. You have three options and you can choos one by make '#' comment on the other two lines. Also you can list other kind computers in this text file.
+After changing into the aws file, you will find file called Vagrantfile. You can change the remote machine you use by modify this file. You have three options and you can choos one by make '#' comment on the other two lines. Also you can list other kind computers in this text file.
 
-Then use command `vagrant up` and then `vagrant ssh` to connect to the instance you creat.
+Then use command `vagrant up` and then `vagrant ssh` to connect to the instance you created.
 
 And to check the status of the instance, you can log in to the website:
 https://ph290-2015-spring-uq6b1f1.signin.aws.amazon.com/console
@@ -34,11 +34,11 @@ update all files from the default state:
 
 `sudo apt-get upgrade`
  
-Then add CRAN mirror to custom sources.list file using vi
+Then add CRAN mirror to custom sources.list file using vi (optional)
 
 `sudo vi /etc/apt/sources.list.d/sources.list`
  
-Add following line (or your favorite CRAN mirror)
+Then add following line (or your favorite CRAN mirror)
 
 `deb http://lib.stat.cmu.edu/R/CRAN/bin/linux/ubuntu precise/`
  
@@ -51,7 +51,8 @@ Install latest version of R
 `sudo apt-get install r-base`
 
 ##Installing R-studio
-With these commands run, you will now be able to run R from the command line just by typing “R” at the prompt. We can also install R-studio, which makes working in R so much easier.
+
+With these commands, you will now be able to run R from the command line just by typing “R” at the prompt. We can also install R-studio, which makes working in R so much easier.
 
 Fierst, we need to install a few background files
 
@@ -67,7 +68,10 @@ Then we change to a writeable directory. Download & Install RStudio Server
 
 `sudo gdebi rstudio-server-0.97.336-amd64.deb`
 
-#Installing MySQL, MongoDB
+
+#Installing MySQL, MongoDB, Emacs
+
+Also you can install other packages by the similar method.
 
 ```
 #Install MySQL
@@ -75,11 +79,13 @@ sudo apt-get install mysql-common
 sudo apt-get install mysql-server
 #Install MongoDB
 sudo apt-get install mongodb
+#Install Emacs
+sudo apt-get install emacs
 ```
 
 #Download data and code from website
 
-If you familiar with unix command, this part is very simple. I suggest you can writing your code on your own machine using small chunk of the data. After you make sure your code is correct, you can transport your code and data to the instance.
+If you familiar with unix command, this part is very simple. I suggest to write code on your own machine using small chunk of the data. After making sure your code is correct, you can transport your code and data to the instance.
 
 After creat your instance, you can use command `lscpu` to see the performence of the instance.
 
@@ -130,13 +136,14 @@ head(winedata)
 
 ```
 
-This is a classfication problem. So maybe we can try using random forest. We can also use doParallel package to do the parallel programming. As we can request compueter with four cores, we can set number of nodes equals 4.
+This is a classfication problem. So maybe we can try using random forest. We can also use doParallel package to do the parallel programming. As we can request compueter with four cores, we can set number of nodes equals 4. At last, we want to know which feature is the most important. 
 
 
 ```{r}
 library(doParallel)
 library(randomForest)
 
+##change factor into numerical data
 curr<-data.matrix(winedata)
 
 prf.time<-system.time({
@@ -151,7 +158,7 @@ prf.time<-system.time({
 })
 
 srf.time<-system.time(
-      randomForest(as.factor(quality)~., curr, ntree=1000)
+      srf<-randomForest(as.factor(quality)~., curr, ntree=1000)
 )
 
 prf.time
@@ -161,53 +168,98 @@ importance(rf)
 
 ```
 
-This is the result complied by my own computer. Then we can upload this R file to AWS instance. Then just use command `R CMD BATCH Winedata.R RF.Rout` to run the parallized RF on instance. Then we use `cat RF.Rout` to look at the result.
+This is the result complied by my own computer. Then we can upload this R file to AWS instance. Then just use command `R CMD BATCH Winedata.R RF.Rout` to run the parallelized RF on instance. Then we use `cat RF.Rout` to look at the result.
 
-`
+```
 
 > prf.time
    user  system elapsed 
- 11.682   2.714  49.688 
+  1.198   0.293   6.129 
 > srf.time
    user  system elapsed 
- 91.189   1.386  92.578 
-> summary(rf)
-                Length Class  Mode     
-call                4  -none- call     
-type                1  -none- character
-predicted        4898  factor numeric  
-votes           34286  -none- numeric  
-oob.times        4898  -none- numeric  
-classes             7  -none- character
-importance         11  -none- numeric  
-importanceSD        0  -none- numeric  
-localImportance     0  -none- NULL     
-proximity           0  -none- NULL     
-ntree               1  -none- numeric  
-mtry                1  -none- numeric  
-forest             14  -none- list     
-y                4898  factor numeric  
-test                0  -none- NULL     
-inbag               0  -none- NULL     
-terms               3  terms  call     
-> importance(rf)
-                     MeanDecreaseGini
-fixed.acidity                252.1952
-volatile.acidity             330.9620
-citric.acid                  275.8733
-residual.sugar               287.4994
-chlorides                    288.1879
-free.sulfur.dioxide          296.7120
-total.sulfur.dioxide         291.9906
-density                      364.5575
-pH                           288.5167
-sulphates                    268.6880
-alcohol                      361.9772
-> 
-> proc.time()
-   user  system elapsed 
-103.800   4.151 143.243 
+  9.182   0.097   9.278 
 
-`
+```
+##Cross validation
+
+After doing some analysis, we may want to do cross-validation to make sure we did not overfit. Here we can also write function to do parallelized  cross validation. Here is an example to do parallelized k-fold cross-validation.
+
+First, we write a function to split the data into k trunks. The input is the data.The out put is a list, with the k-th element to be the index of the k-th fold.
+
+```{r}
+
+dataSplit = function(data, k, random.seed = NULL) {
+    # Set seed to reproduce the same result
+    if (!is.null(random.seed)) 
+        set.seed(random.seed)
+
+    n = nrow(data)
+    m = n%/%k
+    index = 1:n
+
+    # Split into k folds
+    ans = vector(k, mode = "list")
+    for (i in 1:(k - 1)) {
+        ans[[i]] = sample(index, m)
+        # move index out of our candidate index set
+        index = setdiff(index, ans[[i]])
+    }
+    ans[[k]] = index
+    return(ans)
+}
+
+```
+
+
+Then we write cross-validation function. Here we want to do CV for random frest. The input is the data, the number of fold, the formula, and cv.index (which comes from datasplit function). The out put is just the model that only trained by the training data.
+
+
+```{r}
+
+crossValidation = function(data, cv.index, i, formula.text) {
+    n = nrow(data)
+    # Use k_th fold as test set
+    test.ind = cv.index[[i]]
+    # Use the rest of data as training set
+    train.ind = setdiff(1:n, test.ind)
+    train.data = data[train.ind, ]
+    test.data = data[test.ind, ]
+
+    rp.model = randomForest(as.formula(formula.text), data = train.data,ntree=1000)
+    rp.model
+}
+
+
+```
+
+
+Here we just apply the datasplit and crossValidation functions to our wine dataset.
+
+```{r}
+cv.index = dataSplit(data = winedata, k = 5, random.seed = 128)
+k = 5
+cv.model = vector(k, mode = "list")
+scv.time<-system.time({
+    for (i in 1:k) {
+        cv.model[[i]] = crossValidation(curr, cv.index, i, "as.factor(quality)~.")
+    }
+})
+
+
+cl <- makeCluster(4)
+registerDoParallel(cl)
+pcv.time<-system.time({
+    cv.model <- foreach(i = 1:k, .packages = c("randomForest")) %dopar% {
+        crossValidation(curr, cv.index, i, "as.factor(quality)~.")
+    }
+})
+stopCluster(cl)
+
+scv.time
+pcv.time
+```
+
+Similarly, we can put our file on the AWS, use the similar command.
+
 
 
