@@ -11,7 +11,7 @@ curr<-data.matrix(winedata)
 prf.time<-system.time({
       cl <- makeCluster(4)
       registerDoParallel(cl)
-      ## each cluster, we set 2500 trees
+      ## each cluster, we set 250 trees
       rf <- foreach(ntree=rep(250, 4), 
                     .combine=combine,
                     .packages='randomForest') %dopar%

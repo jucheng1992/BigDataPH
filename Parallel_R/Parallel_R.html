@@ -103,11 +103,11 @@ x</code></pre>
 <pre class="r"><code>y &lt;- foreach(i=1:4, .combine='cbind') %do% rnorm(5)
 y</code></pre>
 <pre><code>##      result.1 result.2 result.3 result.4
-## [1,]  0.24657  0.88070 -1.95734   0.5584
-## [2,] -0.08326  0.05604 -0.03179   2.0712
-## [3,]  0.47677  1.31969  1.30350  -0.6309
-## [4,]  0.52486 -0.69442  1.12492  -2.0075
-## [5,] -1.69198  2.63871  1.17843  -0.6283</code></pre>
+## [1,] -0.87916  -0.6614  -0.5533   0.3766
+## [2,]  1.26434   0.8077  -0.5111   0.3167
+## [3,]  0.35578  -2.6885   0.1665  -0.3196
+## [4,] -0.08735  -1.0882   0.4320   1.2338
+## [5,] -0.03993   1.0387  -0.2571   0.5557</code></pre>
 <p>You can also specify a user-written function to combine the results.</p>
 </div>
 <div id="apply-functions-to-array" class="section level1">
@@ -143,10 +143,10 @@ ssteps[which.max(ssteps[,2]),]</code></pre>
 <pre><code>## [1] 6171  262</code></pre>
 <pre class="r"><code>Eptime</code></pre>
 <pre><code>##    user  system elapsed 
-##   4.157   0.339   6.755</code></pre>
+##   3.877   0.314   6.183</code></pre>
 <pre class="r"><code>Estime</code></pre>
 <pre><code>##    user  system elapsed 
-##   5.771   0.028   5.821</code></pre>
+##   5.569   0.010   5.583</code></pre>
 </div>
 <div id="exercise" class="section level1">
 <h1>Exercise</h1>
@@ -177,10 +177,10 @@ srf.time&lt;-system.time(
 
 prf.time</code></pre>
 <pre><code>##    user  system elapsed 
-##   0.958   0.058   2.197</code></pre>
+##   0.379   0.060   1.644</code></pre>
 <pre class="r"><code>srf.time</code></pre>
 <pre><code>##    user  system elapsed 
-##   0.818   0.055   0.875</code></pre>
+##    0.60    0.05    0.65</code></pre>
 <p>Here is an example using doParallel and foreach package to do GLM based on bootstraped data.</p>
 <pre class="r"><code>library(doParallel)
 
@@ -214,10 +214,10 @@ stime&lt;- system.time({
 
 ptime</code></pre>
 <pre><code>##    user  system elapsed 
-##   0.046   0.004   0.284</code></pre>
+##   0.046   0.004   0.306</code></pre>
 <pre class="r"><code>stime</code></pre>
 <pre><code>##    user  system elapsed 
-##   0.304   0.006   0.310</code></pre>
+##   0.291   0.006   0.297</code></pre>
 <div id="exercise-1" class="section level2">
 <h2>Exercise</h2>
 <ul>
@@ -246,7 +246,8 @@ ptime</code></pre>
 <ul>
 <li><p>Prepare a <strong>shell script</strong> containing the instructions you would like the system to execute. For example a simple script to run an R program called ‘<em>simulate.R</em>’ would contain the single line: <strong>R CMD BATCH –no-save simulate.R simulate.out</strong></p></li>
 <li><p>Connect to cluster: <code>ssh user@arwen.berkeley.edu</code></p></li>
-<li><p>In Unix-like operating systems, chmod is the command and system call which may change the access permissions to file system objects (You can think it like a permission for the file): `<code>chmod 755 job.sh</code></p></li>
+<li><p>In Unix-like operating systems, chmod is the command and system call which may change the access permissions to file system objects (You can think it like a permission for the file): <code>chmod 755 job.sh</code></p></li>
+<li><p>To submit such a job (in this case, requesting 4 cores): ‘qsub -pe smp 4 job.sh’</p></li>
 <li><p>You shoule see “Your job XXXXXXXX (”job.sh“) has been submitted”. If you want to see status of your job, just type in command line: <code>qstat</code></p></li>
 <li><p>After you type ‘qstat’, you will just look at ‘queue’, you will find something like this: <a href="mailto:*low.q@scf-sm001.Berkeley.EDU*">*low.q@scf-sm001.Berkeley.EDU*</a>. This is the mathine that running your code. If you want find details, just use <code>qrsh -q interactive.q -l hostname=scf-sm001</code> and <code>top</code> (you can use control+c to exit from top) command to find detail information. After that, you can type exit to quit.</p></li>
 <li><p>Finally, just look at your out file: <code>cat Simulate.Rout</code></p></li>

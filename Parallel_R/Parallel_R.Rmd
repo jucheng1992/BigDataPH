@@ -226,6 +226,8 @@ In this step, we are not using the shell of remote computer. Hence "tap" can not
 - In Unix-like operating systems, chmod is the command and system call which may change the access
 permissions to file system objects (You can think it like a permission for the file): `chmod 755 job.sh`
 
+- To submit such a job (in this case, requesting 4 cores): 'qsub -pe smp 4 job.sh'
+
 - You shoule see "Your job XXXXXXXX ("job.sh") has been submitted". If you want to see status of your job, just type in command line: `qstat`
 
 - After you type 'qstat', you will just look at 'queue', you will find something like this:

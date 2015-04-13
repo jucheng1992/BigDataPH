@@ -189,10 +189,10 @@ srf.time&lt;-system.time(
 
 prf.time</code></pre>
 <pre><code>##    user  system elapsed 
-##   1.984   0.345   6.839</code></pre>
+##   1.425   0.389   7.090</code></pre>
 <pre class="r"><code>srf.time</code></pre>
 <pre><code>##    user  system elapsed 
-##   8.962   0.194   9.277</code></pre>
+##   8.849   0.204   9.144</code></pre>
 <pre class="r"><code>summary(rf)</code></pre>
 <pre><code>##                 Length Class  Mode     
 ## call                4  -none- call     
@@ -214,17 +214,17 @@ prf.time</code></pre>
 ## terms               3  terms  call</code></pre>
 <pre class="r"><code>importance(rf)</code></pre>
 <pre><code>##                      MeanDecreaseGini
-## fixed.acidity                   250.4
-## volatile.acidity                331.0
-## citric.acid                     275.5
-## residual.sugar                  288.3
-## chlorides                       288.1
-## free.sulfur.dioxide             295.7
-## total.sulfur.dioxide            295.1
-## density                         365.4
-## pH                              289.2
-## sulphates                       269.3
-## alcohol                         359.6</code></pre>
+## fixed.acidity                   250.3
+## volatile.acidity                332.4
+## citric.acid                     273.5
+## residual.sugar                  288.2
+## chlorides                       288.9
+## free.sulfur.dioxide             295.8
+## total.sulfur.dioxide            292.7
+## density                         367.8
+## pH                              288.6
+## sulphates                       269.5
+## alcohol                         359.5</code></pre>
 <p>This is the result complied by my own computer. Then we can upload this R file to AWS instance. Then just use command <code>R CMD BATCH Winedata.R RF.Rout</code> to run the parallelized RF on instance. Then we use <code>cat RF.Rout</code> to look at the result.</p>
 <pre><code>
 &gt; prf.time
@@ -292,10 +292,10 @@ stopCluster(cl)
 
 scv.time</code></pre>
 <pre><code>##    user  system elapsed 
-##  34.018   0.552  34.750</code></pre>
+##  33.272   0.594  33.976</code></pre>
 <pre class="r"><code>pcv.time</code></pre>
 <pre><code>##    user  system elapsed 
-##   1.395   0.795  19.698</code></pre>
+##   1.308   0.725  20.454</code></pre>
 <p>Similarly, we can put our file on the AWS, use the similar command.</p>
 </div>
 </div>
